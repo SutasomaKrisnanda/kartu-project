@@ -2,13 +2,22 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Relations\Pivot;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
 
-class RoomUser extends Pivot
+class RoomUser extends Model
 {
-    protected $table = 'room_users';
+    use HasFactory;
 
-    protected $fillable = [
-        'result'
-    ];
+    protected $fillable = ['room_id', 'user_id', 'role'];
+
+    public function room()
+    {
+        return $this->belongsTo(Room::class);
+    }
+
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
 }

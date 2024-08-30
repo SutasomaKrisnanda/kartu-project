@@ -8,39 +8,47 @@
     <style>
         /* reset */
         body {
-            display: flex;
-            justify-content: center;
-            align-items: center;
             height: 100vh;
             margin: 0;
         }
 
     </style>
+    <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/all.css" >
     <link rel="stylesheet" href="{{ asset('css/game/load.css') }}">
     <link rel="stylesheet" href="{{ asset('css/game/pick.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/game/common.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/game/small.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/game/medium.css') }}">
+    <link rel="stylesheet" href="{{ asset('css/game/large.css') }}">
 </head>
 <body>
     @csrf
-    <div class="body-loading">
-        <div class="loading-container">
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Waiting for opponent<span class="dots">...</span></div>
-        </div>
-    </div>
-    <div class="body-game" style="display: none">
-        <div id="game-container">
-            <div class="game-container">
-                <div class="timer" id="timer">02:00</div>
-                <div class="card-container" id="card-container">
-                    <!-- Cards will be generated here -->
-                </div>
-                <button id="accept-btn" disabled>Accept</button>
-            </div>
-
-        </div>
-    </div>
+    <div id="game-container" style="display: none;"></div>
     <script>
-        // Check every 3 seconds
+        const loadingBody = document.createElement('div');
+        loadingBody.classList.add('body-loading');
+
+        const loadingContainer = document.createElement('div');
+        loadingContainer.classList.add('loading-container');
+
+        const loadingSpinner = document.createElement('div');
+        loadingSpinner.classList.add('loading-spinner');
+
+        const loadingText = document.createElement('div');
+        loadingText.classList.add('loading-text');
+        loadingText.textContent = 'Waiting for Opponent';
+
+        const dots = document.createElement('span');
+        dots.classList.add('dots');
+        dots.textContent = '...';
+
+        loadingBody.appendChild(loadingContainer);
+        loadingText.appendChild(dots);
+        loadingContainer.appendChild(loadingSpinner);
+        loadingContainer.appendChild(loadingText);
+
+        // Tambahkan loading container ke dalam body
+        document.body.appendChild(loadingBody);
         const loadGame = setInterval(async function() {
             try {
                 const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
@@ -51,32 +59,28 @@
                     }
                 });
                 const data = await response.json();
-                console.log(data);
-                console.log(data.startGame);
-                if (data.startGame) {
-                    document.querySelector('.body-loading').style.display = 'none';
-                    document.querySelector('.body-game').style.display = 'flex';
+                if(data.inProgress) {
                     clearInterval(loadGame);
-                    fetch('/pick', {
-                        headers: {
-                            'X-CSRF-TOKEN': csrfToken
-                        }
-                    })
-                    .then(response => response.text()) // Get the HTML content as text
-                    .then(jsCode => {
-                        console.log(jsCode);
-                        eval(jsCode);
-                        // document.getElementById('game-container').innerHTML = html; // Inject the HTML
-                    })
-                    .catch(error => {
-                        console.error('Error fetching game content:', error);
-                    });
+                    document.querySelector('.body-loading').remove();
+
+                    // Load game.js when the game starts
+                    const script = document.createElement('script');
+                    script.src = "{{ asset('js/game/game.js') }}";
+                    document.body.appendChild(script);
+                } else
+                if (data.startGame) {
+                    clearInterval(loadGame);
+                    document.querySelector('.body-loading').remove();
+
+                    // Load pick.js when the game starts
+                    const script = document.createElement('script');
+                    script.src = "{{ asset('js/game/pick.js') }}";
+                    document.body.appendChild(script);
                 }
             } catch (error) {
                 console.error('Error checking room or fetching game content:', error);
-                // Handle errors (e.g., display an error message)
             }
-        }, 3000); // Check every 3 seconds
+        }, 3000);
     </script>
 </body>
 </html>

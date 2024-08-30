@@ -3,9 +3,16 @@
 namespace App\Http\Controllers;
 
 use DOMDocument;
+use App\Models\Item;
 use App\Models\Room;
 use App\Models\User;
+use App\Models\Inventory;
+use App\Models\RoomMove;
+use App\Models\RoomUser;
+use App\Models\RoomUserItem;
+use App\Models\RoomUserStatus;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
 
 class gameController extends Controller
@@ -29,82 +36,204 @@ class gameController extends Controller
             $room = $user->rooms()->first(); // Get the user's room
             if ($room) {
                 $playerCount = $room->users()->count();
-                return response()->json(['startGame' => $playerCount >= 2]);
+                $inProgress = RoomUserItem::where('room_id', $room->id)->where('user_id', $user->id)->exists();
+                return response()->json(['startGame' => $playerCount >= 2, 'inProgress' => $inProgress]);
             }
         }
-        return response()->json(['startGame' => false]);
+        return response()->json(['startGame' => false, 'inProgress' => false]);
     }
 
-    public function pick(Request $request)
-    {
-        $script = "
-            const cardContainer = document.getElementById('card-container');
-            const timerElement = document.getElementById('timer');
-            const acceptBtn = document.getElementById('accept-btn');
+    public function getCards(Request $request){
+        $user = User::find(Auth::user()->id);
+        $cards = $user->items()->where('type', 'card')->get();
 
-            let selectedCards = [];
-            const totalCards = 15;
-            const timeLimit = 120;
-            let timeRemaining = timeLimit;
+        return response()->json($cards);
+    }
 
-            for (let i = 1; i <= totalCards; i++) {
-                const card = document.createElement('div');
-                card.classList.add('card');
-                card.textContent = `Card \${i}`;
-                card.addEventListener('click', () => selectCard(card));
-                cardContainer.appendChild(card);
-            }
+    public function startGame(Request $request) {
+        // Get data from fetch
+        $selectedCards = $request->input('selectedCards');
 
-            function selectCard(card) {
-                if (selectedCards.length < 5) {
-                    if (!card.classList.contains('selected')) {
-                        card.classList.add('selected');
-                        selectedCards.push(card);
-                    } else {
-                        card.classList.remove('selected');
-                        selectedCards = selectedCards.filter(c => c !== card);
-                    }
-                    acceptBtn.disabled = selectedCards.length !== 5;
-                } else {
-                    if (card.classList.contains('selected')) {
-                        card.classList.remove('selected');
-                        selectedCards = selectedCards.filter(c => c != card);
-                    }
-                    acceptBtn.disabled = selectedCards.length !== 5;
-                }
-            }
+        // Save user selected Cards
+        $user = User::find(Auth::user()->id);
+        $room = $user->rooms()->first();
 
-            function startTimer() {
-                const timerInterval = setInterval(() => {
-                    timeRemaining--;
-                    const minutes = Math.floor(timeRemaining / 60);
-                    const seconds = timeRemaining % 60;
-                    timerElement.textContent = `\${String(minutes).padStart(2, '0')}:\${String(seconds).padStart(2, '0')}`;
+        // Find the selected cards
+        $cards = Item::whereIn('token', $selectedCards)->get();
 
-                    if (timeRemaining <= 0) {
-                        clearInterval(timerInterval);
-                        autoCompleteSelection();
-                    }
-                }, 1000);
-            }
+        // Get the opponent in the same room
+        $opponent = $room->users()->where('users.id', '!=', $user->id)->first();
 
-            function autoCompleteSelection() {
-                while (selectedCards.length < 5) {
-                    const remainingCards = Array.from(document.querySelectorAll('.card:not(.selected)'));
-                    const randomCard = remainingCards[Math.floor(Math.random() * remainingCards.length)];
-                    randomCard.classList.add('selected');
-                    selectedCards.push(randomCard);
-                }
-                acceptBtn.disabled = false;
-            }
+        // Save selected cards to RoomUserItem table
+        $roomUserItems = $cards->map(function($card) use ($room, $user) {
+            return [
+                'room_id' => $room->id,
+                'user_id' => $user->id,
+                'item_id' => $card->id,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ];
+        });
+        RoomUserItem::insert($roomUserItems->toArray());
 
-            acceptBtn.addEventListener('click', () => {
-                alert('You have selected: ' + selectedCards.map(c => c.textContent).join(', '));
-            });
+        // Get the player's status in the room
+        $playerStatus = RoomUserStatus::where('user_id', $user->id)
+                                      ->where('room_id', $room->id)
+                                      ->latest()
+                                      ->first();
 
-            startTimer();
-        ";
+        // Get the opponent's status in the room
+        $opponentStatus = $opponent ? RoomUserStatus::where('user_id', $opponent->id)
+                                                ->where('room_id', $room->id)
+                                                ->latest()
+                                                ->first()
+                                     : null;
 
-        return response($script, 200, ['Content-Type' => 'text/javascript']);
+        // Get the player's selected cards (now saved in RoomUserItem)
+        $roomUserItems = $room->items()->where('room_user_items.user_id', $user->id)->get();
+        $cards = $roomUserItems->map(fn($roomUserItem) => $roomUserItem->item);
+
+        // Prepare data for the view
+        $data = [
+            'cards' => $cards,
+            'player' => $user,
+            'opponent' => $opponent,
+            'playerStatus' => $playerStatus,
+            'opponentStatus' => $opponentStatus,
+        ];
+
+        // Render game.blade.php into HTML
+        $htmlContent = view('game/game', $data)->render();
+
+        // Return the data and the HTML content
+        return response()->json([
+            'data' => $data,
+            'html' => $htmlContent
+        ]);
+    }
+
+
+    public function getGame(Request $request){
+        $user = User::find(Auth::user()->id);
+        $room = $user->rooms()->first();
+
+        // Mengambil lawan secara langsung dari relasi users di Room
+        $opponent = $room->users()
+                         ->where('users.id', '!=', $user->id)
+                         ->first();
+
+        // Mengambil items dari user yang sedang login di room saat ini
+        $roomUserItems = $room->items()->where('user_id', $user->id)->get();
+        $cards = $roomUserItems->map(fn($roomUserItem) => $roomUserItem->item);
+
+        // Mengambil status dari player
+        $playerStatus = $room->status()->where('user_id', $user->id)->latest()->first();
+
+        // Mengambil status dari opponent jika ada
+        $opponentStatus = $opponent ? $room->status()->where('user_id', $opponent->id)->latest()->first() : null;
+
+        $data = [
+            'cards' => $cards,
+            'player' => $user,
+            'opponent' => $opponent,
+            'playerStatus' => $playerStatus,
+            'opponentStatus' => $opponentStatus,
+        ];
+
+        return view('game/game', $data);
+    }
+
+
+
+    public function getGameStatus(Request $request){
+        $user = User::find(Auth::user()->id);
+        $room = $user->rooms()->first();
+        if (!$room) {
+            return response()->json(['error' => 'User is not in any room'], 404);
+        }
+
+        $playerStatus = RoomUserStatus::where('user_id', $user->id)->latest()->first();
+        $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->latest()->first();
+        $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->latest()->first();
+        $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->latest()->first();
+        if ($playerMove && $opponentMove)
+        if (!$playerMove->success && !$opponentMove->success){
+            $this->runCardEffect($this->checkElement($playerMove, $opponentMove));
+            $playerMove->success = true;
+            $opponentMove->success = true;
+            $playerMove->save();
+            $opponentMove->save();
+        }
+
+        return response()->json([
+            'player' => $playerStatus ? $playerStatus->only(['hp', 'effect']) : ['hp' => 8, 'effect' => 'Not Found'],
+            'opponent' => $opponentStatus ? $opponentStatus->only(['hp', 'effect']) : ['hp' => 8, 'effect' => 'Not Found'],
+            'success' => ($playerMove->success && $opponentMove->success)
+        ]);
+    }
+
+    public function updateGameStatus(Request $request, $type){
+        $user = User::find(Auth::user()->id);
+        $room = $user->rooms()->first();
+
+        switch ($type){
+            case 'card':
+                $card = Item::where('token', $request->input('cardChosed'))->first();
+                if (!$card) return response()->json(['message' => 'Card not found', 'data' => $request->input('cardChosed')], 404);
+                $data = new RoomMove([
+                    'room_id' => $room->id,
+                    'user_id' => $user->id,
+                    'move_data' => $card->id
+                ]);
+                $data->save();
+            break;
+            default:
+                return response()->json(['message' => 'Invalid type']);
+        }
+        $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->latest()->first();
+        $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->latest()->first();
+        return response()->json(['message' => 'Success Load updateGameStatus']);
+        if (!$playerMove->success && !$opponentMove->success) {
+            $this->runCardEffect($this->checkElement($playerMove, $opponentMove));
+        return response()->json(['message' => 'success']);
+        } else {
+            return response()->json(['message' => 'Wait for opponent to play a card']);
+        }
+    }
+
+    private function checkElement($move1, $move2){
+        return [$move1, $move2];
+
+        $element1 = $move1->move()->element;
+        $element2 = $move2->move()->element;
+        switch($element1){
+            case 'fire':
+                if($element2 == 'air') return [$move1];
+                else if($element2 == 'water') return [$move2];
+                break;
+            case 'water':
+                if($element2 == 'fire') return [$move1];
+                else if($element2 == 'earth') return [$move2];
+                break;
+            case 'earth':
+                if($element2 == 'water') return [$move1];
+                else if($element2 == 'air') return [$move2];
+                break;
+            case 'air':
+                if($element2 == 'earth') return [$move1];
+                else if($element2 == 'fire') return [$move2];
+                break;
+            default:
+                return [$move1, $move2];
+        }
+    }
+
+    private function runCardEffect(array $moves){
+        foreach($moves as $move){
+            $user = $move->user;
+            $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->latest()->first();
+            $opponentStatus->hp = $opponentStatus->hp - 1;
+            $opponentStatus->save();
+        }
     }
 }

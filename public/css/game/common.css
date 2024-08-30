@@ -1,0 +1,247 @@
+:root {
+    --icon-size: 90%;
+    --progress: 0;
+}
+
+
+
+
+/* For Beta Test Only */
+.cd-text, .rtd-text, .pl-text {
+    color: rgb(42, 46, 48);
+    transform: rotate(-45deg);
+    font-family: "League Spartan", sans-serif;
+    font-size: 0.7em;
+    font-weight: bold;
+}
+.pl-text {font-size: 1em;}
+/* For Beta Test Only */
+
+
+
+
+/* === Default styles (apply to all screen sizes unless overridden) === */
+body{margin: 0;padding: 0;}
+*{user-select: none;}
+.container-game {min-height: 100vh;background-image: url('/images/game/bg-game.webp');background-size: cover;width: 100vw;}
+.play-area-game {display: flex;height: 60vh;}
+.dummy-card-game > img {width: 100%;height: 100%;}
+.opponent-play-game {height: 50%;display: flex;align-items: end;justify-content: center;}
+.player-play-game {height: 50%;display: flex;justify-content: center;}
+.bar-player-game img, .bar-opponent-game img {opacity: 0.4;height: 100%;width: 100%;position: absolute;top: 0;}
+.hp-left-game {height: 100%;background-color: rgb(234, 5, 5);}
+:is(.player-play-game, .opponent-play-game) img {height: 100%;width: 100%;}
+.dummy-played-game .load-circle:focus, .dummy-played-game:hover > .load-circle, .dummy-played-game:hover i {display: flex;}
+.dummy-cooldown-game img {width: 100%;height: 100%;}
+
+
+/* === Menu Setting & History === */
+.left-menu-container {width: 12.5%;height: 15vw;}
+.left-menu-game.active {z-index: 1;width: 35vw;height: 50vh;}
+.left-box {width: 12.5vw;height: 15vw;}
+.left-menu-game {
+    height: 100%;
+    background-color: rgb(42, 46, 48, 0.7);
+    border-bottom-right-radius: 50px;
+    position: relative;
+    transition: all 0.5s ease-in-out;
+    overflow: hidden;
+}
+.history-box {
+    position: absolute;
+    top: 1vh;
+    left    : 12.5vw;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: calc(100% - 12.5vw);
+    max-height: 48vh;
+    box-sizing: border-box;
+    overflow-y: auto;
+    padding: 10px;
+}
+
+.history-card-game {
+    --border-radius: 10px;
+    position: relative;
+    background-color: #EEE4DA;
+    margin: 0 5px;
+    border-radius: var(--border-radius);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+}
+.history-card-game > img {width: 100%;height: 100%;border-radius: var(--border-radius);}
+
+.menu-settings-game, .menu-history-game {display: flex;align-items: center;}
+.menu-settings-game {height: 60%;}
+.menu-history-game {height: 20%;padding: 10px;}
+.menu-settings-game > i, .menu-history-game > i {
+    padding: 10%;
+    border-radius: 50%;
+    color: white;
+    margin: 10px;
+    cursor: pointer;
+}
+.menu-history-game > i {
+    padding: 5%;
+    font-size: 2vw;
+}
+.menu-settings-game > i {
+    font-size: 4vw;
+    transition: transform 0.25s ease-in-out;
+    z-index: 2;
+}
+.menu-settings-game.opened > i {transform: rotate(90deg);color:rgb(42, 46, 48); z-index: 9999; position:absolute;}
+.menu-settings-game.opened > i::before {content: '\f00d';}
+
+
+/* === For Loading Circle === */
+.load-circle {
+    position: absolute;
+    --radius: 10vh;
+    width: var(--radius);
+    height: var(--radius);
+    border-radius: 50%;
+    background: conic-gradient(
+        #4caf50 calc(var(--progress) * 1.8deg),
+        #00ff08 calc(var(--progress) * 3.6deg),
+        #ddd calc(var(--progress) * 3.6deg)
+    );
+    transition: background 0.5s ease-in-out;
+    justify-content: center;
+    align-items: center;
+    font-size: 20px;
+    color: #4caf50;
+    display: none;
+}
+
+
+
+
+/* === For Cooldown === */
+.cooldown-count {
+    position: absolute;
+    background-color: #ffffff;
+    --radius: 5vw;
+    width: var(--radius);
+    height: var(--radius);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    border-radius: 50%;
+    font-size: 2rem;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+}
+.dummy-cooldown-game {
+    overflow: hidden;
+    --height: 20vh;
+    width: calc(5/8 * var(--height));
+    height: var(--height);
+    border-radius: 20px;
+    background-color: rgb(255, 255, 255);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.cooldown-player-game {
+    width: 25%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    padding: 0 0 0 40px;
+}
+
+
+
+
+/* === Card- Related === */
+.card-area-game {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 30vh;
+    width: 100%;
+}
+.card-container-game {
+    background-color: #2a2e30;
+    height: 70%;
+    width: 70%;
+    border-radius: 60px;
+    display: flex;
+    align-items: center;
+    padding: 10px 20px;
+}
+.dummy-card-game {
+    position: relative;
+    background-color: #EEE4DA;
+    margin: 0 5px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+}
+.left-view-game {
+    width: 25%;
+    display: flex;
+    flex-direction: column-reverse;
+}
+.right-view-game {
+    width: 25%;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+
+
+
+/* === Menu-Bar === */
+.menu-box {
+    width: 100%;
+    height: 100%;
+    background-image: url('/images/game/bg-game.webp');
+    position: absolute;
+    top: 0;
+    opacity: 0;
+    display: flex;
+    justify-content: center;
+    pointer-events: none;
+    transition: all 0.5s ease-in-out;
+}
+
+.menu-box.active {
+    opacity: 1;
+    pointer-events: all;
+    z-index: 1;
+}
+
+.menu-content {
+    margin-top: 10vh;
+    height: 90vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.timer-game,.menu-section-1, .menu-section-2, .menu-section-3 {
+    font-size: 3rem;
+    margin: 3vh 0;
+    font-family: 'League Spartan', sans-serif;
+    font-weight: bold;
+    transition: all 0.5s ease-in-out;
+    padding: 1% 10%;
+    width: 40vw;
+    border-radius: 1.5em;
+    display: flex;
+    justify-content: center;
+}
+
+:is(.menu-section-1, .menu-section-2, .menu-section-3):hover{
+    background-color: #2a2e30;
+    color: white;
+    cursor: pointer;
+}

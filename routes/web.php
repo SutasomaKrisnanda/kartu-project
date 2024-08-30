@@ -1,5 +1,6 @@
 <?php
 
+use App\Models\Item;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\authController;
@@ -14,7 +15,7 @@ Route::get('/', function () {
 });
 
 Route::get('/test', function () {
-    return view('game/game');
+    return view('test', ['cards' => Item::take(5)->get()]);
 });
 
 Route::middleware(['guest'])->group(function () {
@@ -33,7 +34,11 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/game/{gameCode}', [gameController::class, 'index']);
     Route::get('/battle/room_list', [battleController::class, 'getRoomList']);
     Route::get('/check-room', [gameController::class, 'checkRoom']);
-    Route::get('/pick', [gameController::class, 'pick']);
+    Route::get('get-cards', [gameController::class, 'getCards']);
+    Route::get('/start-game', [gameController::class, 'getGame']);
+    Route::get('/game-status', [gameController::class, 'getGameStatus']);
     Route::post('/create-game', [battleController::class, 'createGame']);
     Route::post('/joinGame/{gameCode}', [battleController::class, 'joinGame']);
+    Route::post('/start-game', [gameController::class, 'startGame']);
+    Route::post('/update-game-status/{type}', [gameController::class, 'updateGameStatus']);
 });

@@ -1,0 +1,136 @@
+@media (min-width: 768px) and (max-width: 1024px) {
+
+
+    .center-view-game {
+        height: 100%;
+        width: 25%;
+    }
+
+    .right-menu-game {
+        width: calc(12.5% - 40px);
+        background-color: rgb(42, 46, 48, 0.7);
+        height: calc(15vw - 20px);
+        border-bottom-left-radius: 50px;
+        padding: 10px 20px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+
+
+    .card-ready-game {
+        width: 50%;
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .right-card-container-game {
+        width: 25%;
+        height: 100%;
+    }
+
+
+
+    .right-menu-game .dummy-cooldown-game {
+        --height: 20vw;
+        height: calc(8/13 * var(--height));
+        width: var(--height);
+    }
+
+    .dummy-card-game {
+        --height: 20vh;
+        width: calc(5/8 * var(--height));
+        height:var(--height);
+    }
+
+    .dummy-played-game {
+        margin: 10px;
+        --height: 26vh;
+        height: var(--height);
+        width: calc(5/8 * var(--height));
+        background-color: rgb(255, 255, 255);
+        border-radius: 20px;
+        box-shadow: rgb(175, 166, 156, 0.5) 8px 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .bar-player-game {
+        background-color: rgb(255, 255, 255, 0.64);
+        height: 20px;
+        width: 100%;
+        border-radius: 20px;
+        margin: 20px 10px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .bar-opponent-game {
+        background-color: rgb(255, 255, 255, 0.64);
+        height: 20px;
+        width: 100%;
+        border-radius: 20px;
+        margin: 20px 10px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .opponent-name-game, .player-name-game {
+        margin: 0 20px;
+        font-family: 'League Spartan', sans-serif;
+        font-weight: bold;
+        color: rgb(255, 255, 255);
+        font-size: 30px;
+        text-shadow: 3px 2px black;
+    }
+
+    .player-effect-game {
+        height: 30px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 5px 10px;
+        flex-direction: row;
+    }
+
+    .opponent-effect-game {
+        height: 30px;
+        width: 100%;
+        display: flex;
+        align-items: center;
+        padding: 5px 10px;
+        flex-direction: row-reverse;
+    }
+
+    .dummy-card-game.hidden {
+        display: none;
+    }
+
+    .dummy-played-game i {
+        position: absolute;
+        width: var(--icon-size);
+        height: var(--icon-size);
+         border-radius: 50%;
+        background-color: rgb(255, 255, 255);
+        display: flex;
+        color: rgb(42, 46, 48, 0.7);
+        align-items: center;
+        justify-content: center;
+        font-size: calc(160%);
+        font-weight: bold;
+        display: none;
+        cursor: pointer;
+    }
+
+    .timer-game, .menu-section-1, .menu-section-2, .menu-section-3 {
+        font-size: 2.5rem;
+        padding: 1.5% 8%;
+        width: 60vw;
+    }
+}

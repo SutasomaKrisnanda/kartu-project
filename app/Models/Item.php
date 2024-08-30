@@ -14,4 +14,7 @@ class Item extends Model
                     ->withTimestamps();
     }
 
+    public function roomUserItems(){
+        return $this->hasMany(RoomUserItem::class);
+    }
 }

@@ -17,12 +17,32 @@ class Room extends Model
         'visibility',
         'password',
         'mode',
+        'winner_id'
     ];
 
-    public function users()
-    {
+    public function users(){
         return $this->belongsToMany(User::class, 'room_users')
                     ->withPivot('role')
-                    ->withPivot('result');
+                    ->withTimestamps();
+    }
+
+    public function roomUsers(){
+        return $this->hasMany(RoomUser::class);
+    }
+
+    public function items(){
+        return $this->hasMany(RoomUserItem::class);
+    }
+
+    public function status(){
+        return $this->hasMany(RoomUserStatus::class);
+    }
+
+    public function moves(){
+        return $this->hasMany(RoomMove::class);
+    }
+
+    public function winner(){
+        return $this->belongsTo(User::class, 'winner_id');
     }
 }

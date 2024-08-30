@@ -61,3 +61,7 @@
 @keyframes blink {
     to { visibility: hidden; }
 }
+
+#game-container {
+    width: 100vw;
+}

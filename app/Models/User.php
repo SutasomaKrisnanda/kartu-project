@@ -58,6 +58,13 @@ class User extends Authenticatable
                     'quest_id' => $quest->id,
                 ]);
             }
+
+            $items = Item::inRandomOrder()->take(10)->get();
+            foreach ($items as $item){
+                $user->inventory()->create([
+                    'item_id' => $item->id,
+                ]);
+            }
         });
     }
 
@@ -82,7 +89,18 @@ class User extends Authenticatable
     public function rooms(){
         return $this->belongsToMany(Room::class, 'room_users')
                     ->withPivot('role')
-                    ->withPivot('result');
+                    ->withTimestamps();
     }
 
+    public function roomItems(){
+        return $this->hasMany(RoomUserItem::class);
+    }
+
+    public function status(){
+        return $this->hasMany(RoomUserStatus::class);
+    }
+
+    public function moves(){
+        return $this->hasMany(RoomMove::class);
+    }
 }

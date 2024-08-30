@@ -1,14 +1,11 @@
 .body-game {
     font-family: Arial, sans-serif;
     background-color: #f4f4f4;
-    display: flex;
-    justify-content: center;
-    align-items: center;
     height: 100vh;
     margin: 0;
 }
 
-.game-container {
+.pick-container {
     text-align: center;
     background-color: #fff;
     padding: 20px;
@@ -40,12 +37,25 @@
     font-size: 18px;
     cursor: pointer;
     transition: transform 0.2s ease;
+    overflow: hidden;
+    opacity: 0.5;
+}
+
+.card:hover {
+    opacity: 1;
+}
+
+.card img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
 }
 
 .card.selected {
     background-color: #4CAF50;
     color: white;
     transform: scale(1.1);
+    opacity: 1  ;
 }
 
 #accept-btn {
