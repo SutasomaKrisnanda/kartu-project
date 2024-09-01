@@ -11,7 +11,6 @@
             height: 100vh;
             margin: 0;
         }
-
     </style>
     <link rel="stylesheet" href="https://site-assets.fontawesome.com/releases/v6.6.0/css/all.css" >
     <link rel="stylesheet" href="{{ asset('css/game/load.css') }}">
@@ -22,40 +21,33 @@
     <link rel="stylesheet" href="{{ asset('css/game/large.css') }}">
 </head>
 <body>
-    @csrf
     <div id="game-container" style="display: none;"></div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script>
+        const CSRF = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
         const loadingBody = document.createElement('div');
-        loadingBody.classList.add('body-loading');
-
         const loadingContainer = document.createElement('div');
-        loadingContainer.classList.add('loading-container');
-
         const loadingSpinner = document.createElement('div');
-        loadingSpinner.classList.add('loading-spinner');
-
         const loadingText = document.createElement('div');
+        const dots = document.createElement('span');
+        loadingBody.classList.add('body-loading');
+        loadingContainer.classList.add('loading-container');
+        loadingSpinner.classList.add('loading-spinner');
         loadingText.classList.add('loading-text');
         loadingText.textContent = 'Waiting for Opponent';
-
-        const dots = document.createElement('span');
         dots.classList.add('dots');
         dots.textContent = '...';
-
         loadingBody.appendChild(loadingContainer);
         loadingText.appendChild(dots);
-        loadingContainer.appendChild(loadingSpinner);
-        loadingContainer.appendChild(loadingText);
+        loadingContainer.append(loadingSpinner, loadingText);
 
-        // Tambahkan loading container ke dalam body
+        // Add Loading Screen
         document.body.appendChild(loadingBody);
         const loadGame = setInterval(async function() {
             try {
-                const csrfToken = document.querySelector('meta[name="csrf-token"]').getAttribute('content');
-
                 const response = await fetch('/check-room', {
                     headers: {
-                        'X-CSRF-TOKEN': csrfToken
+                        'X-CSRF-TOKEN': CSRF
                     }
                 });
                 const data = await response.json();

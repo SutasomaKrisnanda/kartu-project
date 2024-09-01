@@ -183,7 +183,8 @@
         padding: 0 15px 0 0;
     }
 
-    .dummy-card-game.hidden {
+    .dummy-card-game.hidden, .dummy-card-game.cooldown {
+        display: flex;
         opacity: 0.3;
     }
 

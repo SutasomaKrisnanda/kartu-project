@@ -31,6 +31,16 @@ return new class extends Migration
             $table->integer('quantity');
             $table->timestamps();
         });
+
+        Schema::create('card_effects', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('item_id')->constrained()->onDelete('cascade');
+            $table->string('effect_type');
+            $table->integer('effect_value');
+            $table->integer('cooldown');
+            $table->timestamps();
+        });
+
     }
 
     /**
@@ -40,5 +50,6 @@ return new class extends Migration
     {
         Schema::dropIfExists('items');
         Schema::dropIfExists('inventory');
+        Schema::dropIfExists('card_effects');
     }
 };

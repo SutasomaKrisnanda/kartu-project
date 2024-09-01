@@ -17,7 +17,8 @@ use Illuminate\Support\Facades\Auth;
 
 class gameController extends Controller
 {
-    public function index(Request $request){
+    public function index(Request $request)
+    {
         $gameCode = $request->route('gameCode');
         $room = Room::where('code', $gameCode)->first();
 
@@ -30,7 +31,8 @@ class gameController extends Controller
         }
     }
 
-    public function checkRoom(Request $request){
+    public function checkRoom(Request $request)
+    {
         $user = User::find(Auth::user()->id); // Fetch user using User model
         if ($user) {
             $room = $user->rooms()->first(); // Get the user's room
@@ -43,14 +45,16 @@ class gameController extends Controller
         return response()->json(['startGame' => false, 'inProgress' => false]);
     }
 
-    public function getCards(Request $request){
+    public function getCards(Request $request)
+    {
         $user = User::find(Auth::user()->id);
         $cards = $user->items()->where('type', 'card')->get();
 
         return response()->json($cards);
     }
 
-    public function startGame(Request $request) {
+    public function startGame(Request $request)
+    {
         // Get data from fetch
         $selectedCards = $request->input('selectedCards');
 
@@ -65,7 +69,7 @@ class gameController extends Controller
         $opponent = $room->users()->where('users.id', '!=', $user->id)->first();
 
         // Save selected cards to RoomUserItem table
-        $roomUserItems = $cards->map(function($card) use ($room, $user) {
+        $roomUserItems = $cards->map(function ($card) use ($room, $user) {
             return [
                 'room_id' => $room->id,
                 'user_id' => $user->id,
@@ -78,16 +82,16 @@ class gameController extends Controller
 
         // Get the player's status in the room
         $playerStatus = RoomUserStatus::where('user_id', $user->id)
-                                      ->where('room_id', $room->id)
-                                      ->latest()
-                                      ->first();
+            ->where('room_id', $room->id)
+            ->latest()
+            ->first();
 
         // Get the opponent's status in the room
         $opponentStatus = $opponent ? RoomUserStatus::where('user_id', $opponent->id)
-                                                ->where('room_id', $room->id)
-                                                ->latest()
-                                                ->first()
-                                     : null;
+            ->where('room_id', $room->id)
+            ->latest()
+            ->first()
+            : null;
 
         // Get the player's selected cards (now saved in RoomUserItem)
         $roomUserItems = $room->items()->where('room_user_items.user_id', $user->id)->get();
@@ -113,14 +117,15 @@ class gameController extends Controller
     }
 
 
-    public function getGame(Request $request){
+    public function getGame(Request $request)
+    {
         $user = User::find(Auth::user()->id);
         $room = $user->rooms()->first();
 
         // Mengambil lawan secara langsung dari relasi users di Room
         $opponent = $room->users()
-                         ->where('users.id', '!=', $user->id)
-                         ->first();
+            ->where('users.id', '!=', $user->id)
+            ->first();
 
         // Mengambil items dari user yang sedang login di room saat ini
         $roomUserItems = $room->items()->where('user_id', $user->id)->get();
@@ -145,38 +150,80 @@ class gameController extends Controller
 
 
 
-    public function getGameStatus(Request $request){
+    public function getGameStatus(Request $request)
+    {
         $user = User::find(Auth::user()->id);
         $room = $user->rooms()->first();
         if (!$room) {
             return response()->json(['error' => 'User is not in any room'], 404);
         }
-
         $playerStatus = RoomUserStatus::where('user_id', $user->id)->latest()->first();
         $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->latest()->first();
         $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->latest()->first();
         $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->latest()->first();
         if ($playerMove && $opponentMove)
-        if (!$playerMove->success && !$opponentMove->success){
-            $this->runCardEffect($this->checkElement($playerMove, $opponentMove));
-            $playerMove->success = true;
-            $opponentMove->success = true;
-            $playerMove->save();
-            $opponentMove->save();
-        }
+            if (!$playerMove->success && !$opponentMove->success) {
+                $this->runCardEffect($this->checkElement($playerMove, $opponentMove));
+                $playerMove->success = true;
+                $opponentMove->success = true;
+                $playerMove->save();
+                $opponentMove->save();
+                $this->updateCooldown($playerMove, $opponentMove, $playerStatus, $opponentStatus);
+            }
 
         return response()->json([
             'player' => $playerStatus ? $playerStatus->only(['hp', 'effect']) : ['hp' => 8, 'effect' => 'Not Found'],
             'opponent' => $opponentStatus ? $opponentStatus->only(['hp', 'effect']) : ['hp' => 8, 'effect' => 'Not Found'],
-            'success' => ($playerMove->success && $opponentMove->success)
+            'success' => ($playerMove && $opponentMove) ? ($playerMove->success && $opponentMove->success) : false,
+            'playerCooldown' => json_decode($playerStatus->cooldown),
+            'opponentCooldown' => json_decode($opponentStatus->cooldown),
+            'message' => 'Hello from gameController'
         ]);
     }
 
-    public function updateGameStatus(Request $request, $type){
+    private function updateCooldown($playerMove, $opponentMove, $playerStatus, $opponentStatus) {
+        $updateCooldownList = function(&$cooldowns) {
+            if ($cooldowns) {
+            foreach ($cooldowns as $index => &$cd) {
+                $cd['duration']--;
+                if ($cd['duration'] <= 0) {
+                    unset($cooldowns[$index]);
+                }
+            }
+            $cooldowns = array_values($cooldowns);
+            }
+        };
+        $playerCd = $playerStatus->cooldown ? json_decode($playerStatus->cooldown, true) : [];
+        $opponentCd = $opponentStatus->cooldown ? json_decode($opponentStatus->cooldown, true) : [];
+        $updateCooldownList($playerCd);
+        $updateCooldownList($opponentCd);
+
+        $playerCd[] = [
+            'name' => $playerMove->move->name,
+            'token' => $playerMove->move->token,
+            'image' => $playerMove->move->image,
+            'duration' => $playerMove->move->effect->cooldown
+        ];
+        $opponentCd[] = [
+            'name' => $opponentMove->move->name,
+            'token' => $opponentMove->move->token,
+            'image' => $opponentMove->move->image,
+            'duration' => $opponentMove->move->effect->cooldown
+        ];
+        $playerStatus->update(['cooldown' => json_encode($playerCd)]);
+        $opponentStatus->update(['cooldown' => json_encode($opponentCd)]);
+        $playerStatus->save();
+        $opponentStatus->save();
+    }
+
+
+
+    public function updateGameStatus(Request $request, $type)
+    {
         $user = User::find(Auth::user()->id);
         $room = $user->rooms()->first();
 
-        switch ($type){
+        switch ($type) {
             case 'card':
                 $card = Item::where('token', $request->input('cardChosed'))->first();
                 if (!$card) return response()->json(['message' => 'Card not found', 'data' => $request->input('cardChosed')], 404);
@@ -186,54 +233,44 @@ class gameController extends Controller
                     'move_data' => $card->id
                 ]);
                 $data->save();
-            break;
+                break;
             default:
                 return response()->json(['message' => 'Invalid type']);
         }
-        $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->latest()->first();
-        $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->latest()->first();
-        return response()->json(['message' => 'Success Load updateGameStatus']);
-        if (!$playerMove->success && !$opponentMove->success) {
-            $this->runCardEffect($this->checkElement($playerMove, $opponentMove));
-        return response()->json(['message' => 'success']);
-        } else {
-            return response()->json(['message' => 'Wait for opponent to play a card']);
-        }
+
+        return response()->json(['message' => $card->element]);
     }
 
-    private function checkElement($move1, $move2){
-        return [$move1, $move2];
-
-        $element1 = $move1->move()->element;
-        $element2 = $move2->move()->element;
-        switch($element1){
-            case 'fire':
-                if($element2 == 'air') return [$move1];
-                else if($element2 == 'water') return [$move2];
-                break;
-            case 'water':
-                if($element2 == 'fire') return [$move1];
-                else if($element2 == 'earth') return [$move2];
-                break;
-            case 'earth':
-                if($element2 == 'water') return [$move1];
-                else if($element2 == 'air') return [$move2];
-                break;
-            case 'air':
-                if($element2 == 'earth') return [$move1];
-                else if($element2 == 'fire') return [$move2];
-                break;
+    private function checkElement($move1, $move2)
+    {
+        $element1 = $move1->move->element;
+        $element2 = $move2->move->element;
+        switch ($element1) {
+            case 'Fire':
+                if ($element2 == 'Air') return [$move1];
+                else if ($element2 == 'Water') return [$move2];
+            case 'Water':
+                if ($element2 == 'Fire') return [$move1];
+                else if ($element2 == 'Earth') return [$move2];
+            case 'Earth':
+                if ($element2 == 'Water') return [$move1];
+                else if ($element2 == 'Air') return [$move2];
+            case 'Air':
+                if ($element2 == 'Earth') return [$move1];
+                else if ($element2 == 'Fire') return [$move2];
             default:
                 return [$move1, $move2];
         }
     }
 
-    private function runCardEffect(array $moves){
-        foreach($moves as $move){
+    private function runCardEffect(array $moves)
+    {
+        foreach ($moves as $move) {
             $user = $move->user;
             $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->latest()->first();
             $opponentStatus->hp = $opponentStatus->hp - 1;
             $opponentStatus->save();
         }
+        return 0;
     }
 }

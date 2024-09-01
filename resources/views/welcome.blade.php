@@ -36,15 +36,15 @@
             }
         }
         .btn-primary {
-            background-color: #f8f9fa; 
-            color: #6c757d; 
-            border: none; 
+            background-color: #f8f9fa;
+            color: #6c757d;
+            border: none;
         }
         .btn-primary:hover {
             background-color: #6c757d;
             color: #e2e6ea;
-            transform: translateY(-2px); 
-            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1); 
+            transform: translateY(-2px);
+            box-shadow: 0px 4px 6px rgba(0, 0, 0, 0.1);
         }
         .navbar {
             transition: top 0.3s;
@@ -91,14 +91,14 @@
                 </ul>
             </div>
         </div>
-    </nav>  
+    </nav>
 
     <button type="button" class="btn btn-primary btn-floating btn-lg" id="btn-back-to-top">
         <i class="fas fa-arrow-up"></i>
     </button>
 
     <div class="container-fluid">
-        <div class="row vh-100 vw-100"> 
+        <div class="row vh-100 vw-100">
             <div class="col-md-12 d-flex flex-column justify-content-center align-items-center">
                 <h1 class="text-center">Welcome!</h1>
                 <p class="lead text-center">This is the welcome page of our website.</p>

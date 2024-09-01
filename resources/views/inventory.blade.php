@@ -1,3 +1,4 @@
+{{-- {{ dd($items->where('type', 'card')->first()->effect) }} --}}
 <x-home.layout>
     {{-- This for the variables --}}
     <x-slot:nickname>{{ $user->nickname }}</x-slot>
@@ -15,7 +16,7 @@
                     <button class="nav-link active" onclick="filterCategory('card')">Card</button>
                 </li>
                 <li class="nav-item">
-                    <button class="nav-link" onclick="filterCategory('items')">Items</button>
+                    <button class="nav-link" onclick="filterCategory('item')">Items</button>
                 </li>
                 <li class="nav-item">
                     <button class="nav-link" onclick="filterCategory('material')">Material</button>
@@ -33,10 +34,32 @@
                 <!-- Example Item -->
                 @foreach ($items as $item)
                 <div class="card category-{{ $item->type }}" style="width: 10rem;">
-                    <img src="{{ $item->image }}" class="card-img-top" alt="{{ $item->token }}" style="width: 100%; cursor: pointer;" onclick="showItemDetails('{{ $item->image }}', '{{ $item->name }}', '{{ $item->description }}', '{{ $item->pivot->quantity }}')">
+                    <img src="{{ $item->image }}" class="card-img-top" alt="{{ $item->token }}"
+                        style="width: 100%; cursor: pointer;"
+                        onclick="showItemDetails(
+                        '{{ $item->image }}',
+                        '{{ $item->name }}',
+                        '{{ $item->description }}',
+                        '{{ $item->pivot->quantity }}',
+                        '{{ $item->type === 'card' ? $item->effect->effect_type : '' }}',
+                        '{{ $item->type === 'card' ? $item->effect->effect_value : '' }}'
+                    )">
                     <div class="card-body">
-                        <span class="rounded-circle bg-warning text-white text-center" style="font-size: 15px; width: 20px; height: 20px; display: inline-block; margin-right: 10px; user-select: none;">{{ $item->pivot->quantity }}</span>
-                        <b class="card-title d-flex align-items-center" style="cursor: pointer;" onclick="showItemDetails('{{ $item->image }}', '{{ $item->name }}', '{{ $item->description }}', '{{ $item->pivot->quantity }}')">{{ $item->name }}</b>
+                        <span class="rounded-circle bg-warning text-white text-center"
+                            style="font-size: 15px; width: 20px; height: 20px; display: inline-block; margin-right: 10px; user-select: none;">
+                            {{ $item->pivot->quantity }}
+                        </span>
+                        <b class="card-title d-flex align-items-center" style="cursor: pointer;"
+                            onclick="showItemDetails(
+                            '{{ $item->image }}',
+                            '{{ $item->name }}',
+                            '{{ $item->description }}',
+                            '{{ $item->pivot->quantity }}',
+                            '{{ $item->type === 'card' ? $item->effect->effect_type : '' }}',
+                            '{{ $item->type === 'card' ? $item->effect->effect_value : '' }}'
+                        )">
+                            {{ $item->name }}
+                        </b>
                     </div>
                     <input type="hidden" name="date" value="{{ $item->pivot->updated_at }}">
                     <input type="hidden" name="rarity" value="{{ $item->rarity }}">
@@ -143,11 +166,19 @@
         }
 
         // Function to show item details in a popup
-        function showItemDetails(image, name, description, quantity) {
+        function showItemDetails(image, name, description, quantity, effectType, effectValue) {
+            let effectHtml = '';
+
+            if (effectType && effectValue) {
+                effectHtml = `<p><strong>Effect:</strong> ${effectValue} ${effectType}</p>`;
+            }
+
             Swal.fire({
                 title: name,
                 html: `
                     <p><strong>Quantity:</strong> ${quantity}</p>
+                    ${effectHtml}
+                    <p><strong>Description:</strong></p>
                     <p>${description}</p>
                 `,
                 imageUrl: image,
@@ -156,6 +187,7 @@
                 confirmButtonText: 'Close'
             });
         }
+
 
         // Initial Setup
         document.addEventListener('DOMContentLoaded', () => {
@@ -167,7 +199,7 @@
 
 
 
-    {{-- <div class="container rounded-4" style="background: linear-gradient(45deg, #7ed957, #007e50); padding: 10px;">
+{{-- <div class="container rounded-4" style="background: linear-gradient(45deg, #7ed957, #007e50); padding: 10px;">
         <div class="row mb-4">
             <div class="col-12">
                 <div class="btn-group rounded-4" role="group" aria-label="Sort Buttons" style="padding: 10px;">

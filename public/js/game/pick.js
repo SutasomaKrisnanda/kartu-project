@@ -1,61 +1,47 @@
-// Membuat elemen-elemen HTML
+
 const gameContainer = document.createElement('div');
-gameContainer.classList.add('body-game');
-
 const pickContainer = document.createElement('div');
+const timerElement = document.createElement('div');
+const cardContainer = document.createElement('div');
+const acceptBtn = document.createElement('button');
+gameContainer.classList.add('body-game');
 pickContainer.classList.add('pick-container');
-
-const timerElement = document.createElement('div'); // Menggunakan timerElement langsung untuk konsistensi
 timerElement.classList.add('timer');
+cardContainer.classList.add('card-container');
 timerElement.id = 'timer';
 timerElement.textContent = '02:00';
-
-const cardContainer = document.createElement('div'); // Menggunakan cardContainer langsung untuk konsistensi
-cardContainer.classList.add('card-container');
 cardContainer.id = 'card-container';
-
-const acceptBtn = document.createElement('button');
 acceptBtn.id = 'accept-btn';
 acceptBtn.textContent = 'Accept';
 acceptBtn.disabled = true;
-
-// Menambahkan elemen anak ke dalam container
-pickContainer.appendChild(timerElement); // Menggunakan timerElement
-pickContainer.appendChild(cardContainer); // Menggunakan cardContainer
-pickContainer.appendChild(acceptBtn);
+pickContainer.append(timerElement, cardContainer, acceptBtn);
 gameContainer.appendChild(pickContainer);
-
-// Menambahkan gameContainer ke dalam body (atau elemen lain yang Anda inginkan)
 document.body.appendChild(gameContainer);
+
 
 let selectedCards = [];
 const timeLimit = 120;
 let timeRemaining = timeLimit;
 
-// Fetch the cards data from the server
-fetch('/get-cards', {
-    headers: {
-        'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-    }
-})
-.then(response => response.json())
-.then(cardsData => {
-    cardsData.forEach(cardData => {
-        const card = document.createElement('div');
-        card.classList.add('card');
-        card.dataset.cardToken = cardData.token;
+fetch('/get-cards', { headers: { 'X-CSRF-TOKEN': CSRF } })
+    .then(response => response.json())
+    .then(cardsData => {
+        cardsData.forEach(cardData => {
+            const card = document.createElement('div');
+            card.classList.add('card');
+            card.dataset.cardToken = cardData.token;
 
-        const img = document.createElement('img');
-        img.src = cardData.image;
-        img.alt = cardData.name;
-        card.appendChild(img);
-        card.addEventListener('click', () => selectCard(card));
-        cardContainer.appendChild(card);
+            const img = document.createElement('img');
+            img.src = cardData.image;
+            img.alt = cardData.name;
+            card.appendChild(img);
+            card.addEventListener('click', () => selectCard(card));
+            cardContainer.appendChild(card);
+        });
     });
-});
 
 function selectCard(card) {
-    if (selectedCards.length < 5) {
+    if (selectedCards.length < 5 || card.classList.contains('selected')) {
         if (!card.classList.contains('selected')) {
             card.classList.add('selected');
             selectedCards.push(card);
@@ -63,14 +49,12 @@ function selectCard(card) {
             card.classList.remove('selected');
             selectedCards = selectedCards.filter(c => c !== card);
         }
-    } else {
-        if (card.classList.contains('selected')) {
-            card.classList.remove('selected');
-            selectedCards = selectedCards.filter(c => c != card);
-        }
     }
+    // Pastikan selectedCards hanya berisi kartu yang saat ini memiliki class 'selected'
+    selectedCards = Array.from(document.querySelectorAll('.card.selected'));
     acceptBtn.disabled = selectedCards.length !== 5;
 }
+
 
 function startTimer() {
     const timerInterval = setInterval(() => {
@@ -97,41 +81,39 @@ function autoCompleteSelection() {
     acceptBtn.disabled = false;
 }
 
-acceptBtn.addEventListener('click', () => {
-    const selectedCardTokens = selectedCards.map(c => c.dataset.cardToken);
+acceptBtn.addEventListener('click', async () => {
+    acceptBtn.removeEventListener('click', arguments.callee);
+    selectedCards = Array.from(document.querySelectorAll('.card.selected'));
 
-    const csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute('content');
-    fetch('/start-game', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'X-CSRF-TOKEN': csrfToken
-        },
-        body: JSON.stringify({ selectedCards: selectedCardTokens })
-    })
-    .then(response => {
-        if (response.ok) {
-            return response.json();
-        } else {
-            return response.json().then(errorData => {
-                throw new Error(errorData.message);
-            });
-        }
-    })
-    .then(data => {
+    if (selectedCards.length !== 5) {
+        alert('Please select exactly 5 cards.');
+        return;
+    }
+
+    const selectedCardTokens = selectedCards.map(c => c.dataset.cardToken);
+    try {
+        const response = await fetch('/start-game', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': CSRF
+            },
+            body: JSON.stringify({ selectedCards: selectedCardTokens })
+        });
+        const data = await response.json();
         document.getElementById('game-container').style.display = 'flex';
         document.getElementById('game-container').innerHTML = data.html;
-
         const script = document.createElement('script');
         script.src = '/js/game/game.js';
         document.body.appendChild(script);
-
-        gameContainer.remove(); // Menghapus gameContainer setelah game dimulai
-    })
-    .catch(error => {
+        gameContainer.remove();
+    } catch (error) {
         console.error('Error starting game:', error);
         alert('An error occurred while starting the game: ' + error.message);
-    });
+    }
 });
+
+
+
 
 startTimer();

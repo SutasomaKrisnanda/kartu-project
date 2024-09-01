@@ -3,9 +3,9 @@
 namespace Database\Seeders;
 
 use App\Models\Item;
-use App\Models\Quest;
+use App\Models\CardEffect;
 use App\Models\User;
-use App\Models\QuestProgress;
+use App\Models\Quest;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -27,16 +27,15 @@ class DatabaseSeeder extends Seeder
             'email' => 'test2@example.com',
         ]);
 
-        // User::all()->each(function ($user) {
-        //     $quests = Quest::inRandomOrder()->take(5)->get();
-        //     foreach ($quests as $quest) {
-        //         QuestProgress::factory()->forQuest($quest)->create([
-        //             'user_id' => $user->id,
-        //         ]);
-        //     }
-        // });
+        $items = Item::factory(100)->create();
+        foreach ($items as $item) {
+            if ($item->type === 'card') {
+                CardEffect::factory()->create([
+                    'item_id' => $item->id,
+                ]);
+            }
+        }
 
-        Item::factory(100)->create();
         $this->call([InventorySeeder::class]);
     }
 }

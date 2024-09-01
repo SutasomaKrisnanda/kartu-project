@@ -23,6 +23,7 @@ class RoomMove extends Model
 
     public function move()
     {
-        return $this->belongsTo(Item::class);
+        return $this->belongsTo(Item::class, 'move_data', 'id');
     }
+
 }

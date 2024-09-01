@@ -1,64 +1,84 @@
-// load the game
 fetch('/start-game', {
-        headers: {
-            'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-        }
-    }).then(response => response.text())
+    headers: {
+        'X-CSRF-TOKEN': CSRF
+    }
+}).then(response => response.text())
     .then(html => {
         document.getElementById('game-container').style.display = 'flex';
         document.getElementById('game-container').innerHTML = html;
         pageLoaded();
     });
 
-function pageLoaded(){
-    let locked = false;
-    let timer = 10;
-    let timeCount = 0;
-    let timerInterval, updateInterval;
-    let moveCount = 0;
-    let successCount = 0;
+function pageLoaded() {
+    // Initialize variable
+    let locked = false, timer = 60, timeCount = 0, timerInterval, updateInterval, moveCount = 0, successCount = 0;
     const playerChosed = document.querySelector('.player-play-game .dummy-played-game');
+    const targetPlayerCd = document.querySelector('.cooldown-player-game .dummy-cooldown-game');
+    const targetOpponentCd = document.querySelector('.right-menu-game .dummy-cooldown-game');
+    const waitGameStatus = () => updateInterval = setInterval(getGameStatus, 500);
+    const updateCooldown = (target, cooldown, hero) => {
+        const img = document.createElement('img');
+        img.src = cooldown[0].image;
+        img.alt = cooldown[0].name;
+        img.title = cooldown[0].name;
+        target.firstChild.replaceWith(img);
+        target.dataset.cardToken = cooldown[0].token;
+        hero.textContent = cooldown[0].duration;
+        target.appendChild(hero.cloneNode(true));
+    };
 
+    checkGameStatus();
+    function checkGameStatus() {
+        if (document.querySelector('.bar-player-game .hp-left-game').style.width == '0%') {
+            Swal.fire({
+                title: 'You Lose!',
+                icon: 'error'
+            });
+            locked = true;
+            clearInterval(timerInterval);
+        }
+        if (document.querySelector('.bar-opponent-game .hp-left-game').style.width == '0%') {
+            Swal.fire({
+                title: 'You Win!',
+                icon: 'success'
+            });
+            locked = true;
+            clearInterval(timerInterval);
+        }
+    }
 
     document.querySelectorAll('.dummy-card-game').forEach(each => {
         each.addEventListener('click', () => {
-            if(!locked){
+            if (!locked && !each.classList.contains('cooldown')) {
                 playerChosed.dataset.cardToken = each.dataset.cardToken;
                 playerChosed.innerHTML = each.innerHTML;
-
                 const checkIcon = document.createElement('i');
                 checkIcon.className = 'fa-solid fa-check';
-
                 const loadCircle = document.createElement('div');
                 loadCircle.className = 'load-circle';
-
                 loadCircle.appendChild(checkIcon);
                 playerChosed.appendChild(loadCircle);
-
                 confirmCardListener(checkIcon);
-                if(document.querySelector('.dummy-card-game.hidden')) {
-                    document.querySelector('.dummy-card-game.hidden').classList.toggle('hidden');
-                }
+                document.querySelector('.dummy-card-game.hidden')?.classList.toggle('hidden');
                 each.classList.toggle('hidden');
             }
         });
     });
 
-
     document.querySelector('.menu-settings-game').addEventListener('click', () => {
         document.querySelector('.menu-settings-game').classList.toggle('opened');
         document.querySelector('.menu-box').classList.toggle('active');
     });
-
     document.querySelector('.menu-history-game').addEventListener('click', () => {
         document.querySelector('.left-menu-game').classList.toggle('active');
     });
 
+
     // Call startTimer() to initially start the timer
     startTimer();
 
-    function cardConfirmed(){
-        if(playerChosed.dataset.cardToken){
+    function cardConfirmed() {
+        if (playerChosed.dataset.cardToken) {
             const icon = playerChosed.querySelector('i');
             icon.classList.remove('fa-check');
             icon.classList.add('fa-lock');
@@ -68,116 +88,87 @@ function pageLoaded(){
             fetch('/update-game-status/card', {
                 method: 'POST',
                 headers: {
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content'),
+                    'X-CSRF-TOKEN': CSRF,
                     'Content-Type': 'application/json'
                 },
-                body: JSON.stringify({ cardChosed : card })
+                body: JSON.stringify({ cardChosed: card })
             }).then(response => response.json()).then(data => {
                 timeCount = timer;
                 waitGameStatus();
-                console.log(data.message);
-
                 console.log("Move " + (++moveCount) + " : " + card);
             })
-            console.log('Fetch to Update Game');
         } else {
-            playerChosed.innerHTML= ''
-            // setTimeout(() =>{
-                startTimer()
-            // }, 1000)
+            playerChosed.innerHTML = ''
+            startTimer()
             playerChosed.removeAttribute('data-card-token');
             console.log("Move " + (++moveCount) + " : Skipped");
-
-            return;
         }
     }
 
-    function confirmCardListener(element){
-        element.onclick = ()=>{
+    function confirmCardListener(element) {
+        element.onclick = () => {
             document.documentElement.style.setProperty('--progress', `100`);
-            cardConfirmed();
+            if (!locked) cardConfirmed();
         }
-    }
-
-    function addCooldown(){
-        // For medium and large screen
-        const cooldown = document.querySelector('.cooldown-player-game .dummy-cooldown-game');
-        playerChosed.lastChild.remove();
-        cooldown.innerHTML = playerChosed.innerHTML;
-        playerChosed.innerHTML= '';
-        playerChosed.removeAttribute('data-card-token');
-
-        const cooldownHero = document.createElement('div');
-        cooldownHero.classList.add('cooldown-count');
-        cooldownHero.textContent = '1';
-        cooldown.appendChild(cooldownHero.cloneNode(true));
-        addCooldownTimer(cooldown);
-
-        // // For small screen
-        const cardHidden = document.querySelector('.dummy-card-game.hidden');
-        cardHidden.appendChild(cooldownHero);
-        addCooldownTimer(cardHidden);
-    }
-
-    function addCooldownTimer(element){
-        let cooldownCount = 1;
-        setTimeout(() => {
-            document.querySelector('.cooldown-player-game .dummy-cooldown-game').innerHTML = '';
-            let cooldownCount = element.querySelector('.cooldown-count');
-            if(cooldownCount) {
-                cooldownCount.remove();
-                element.classList.remove('hidden');
-            }
-            console.log('cooldown over!');
-            locked = false;
-            startTimer();
-        }, cooldownCount*2000);
     }
 
     function startTimer() {
         clearInterval(timerInterval);
-        timeCount = 0; // Reset timeCount
+        timeCount = 0;
         timerInterval = setInterval(() => {
             timeCount++;
             document.documentElement.style.setProperty('--progress', `${timeCount / timer * 100}`);
             if (timeCount >= timer && !locked) {
                 cardConfirmed();
             }
-            console.log(timeCount)
         }, 1000);
-        // return timeCount;
     }
 
-    function waitGameStatus(){
-        updateInterval = setInterval(getGameStatus, 500);
-    }
-
-    function getGameStatus(){
-        fetch('/game-status', {
-            headers: {
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-            }
-        }).then(response => response.json()).then(data => {
-                console.log(data);
-                if(data.success){
-                    successCount++; // Increment counter ketika success = true
-                    if(successCount >= 2){
-                        clearInterval(updateInterval); // Hentikan interval setelah 2 kali success = true
-                        return;
+    function getGameStatus() {
+        fetch('/game-status', { headers: { 'X-CSRF-TOKEN': CSRF } })
+            .then(response => response.json()).then(data => {
+                if (data.success) {
+                    console.log(data);
+                    updateInGameStatus(data);
+                    locked = false;
+                    if (++successCount >= 2) {
+                        clearInterval(updateInterval);
+                        successCount = 0;
                     }
                 }
-                updateInGameStatus(data);
             });
     }
 
-    function updateInGameStatus(data){
-        const playerLifePercent = data.player.hp * 12.5 + '%';
-        const opponentLifePercent = data.opponent.hp * 12.5 + '%';
+    function updateInGameStatus(data) {
+        playerChosed.innerHTML = '';
+        playerChosed.removeAttribute('data-card-token');
 
-        document.documentElement.style.setProperty('--player-life-width', playerLifePercent);
-        document.documentElement.style.setProperty('--opponent-life-width', opponentLifePercent);
+        const { playerCooldown, opponentCooldown } = data;
+        const cooldownHero = document.createElement('div');
+        cooldownHero.classList.add('cooldown-count');
 
-        document.querySelector('.bar-player-game .hp-left-game').style.width = playerLifePercent;
-        document.querySelector('.bar-opponent-game .hp-left-game').style.width = opponentLifePercent;
+        // Set the HP value
+        document.querySelector('.bar-player-game .hp-left-game').style.width = data.player.hp * 12.5 + '%';
+        document.querySelector('.bar-opponent-game .hp-left-game').style.width = data.opponent.hp * 12.5 + '%';
+        // Set Cooldown
+        updateCooldown(targetPlayerCd, playerCooldown, cooldownHero);
+        updateCooldown(targetOpponentCd, opponentCooldown, cooldownHero);
+
+        document.querySelectorAll('.dummy-card-game').forEach(card => {
+            card.classList.remove('cooldown');
+            card.querySelector('.cooldown-count')?.remove();
+        });
+
+        [playerCooldown, opponentCooldown].forEach(cooldownList => {
+            cooldownList.forEach(cooldown => {
+                const cardElement = document.querySelector('.dummy-card-game[data-card-token="' + cooldown.token + '"]');
+                if (cardElement) {
+                    cooldownHero.textContent = cooldown.duration;
+                    cardElement.classList.add('cooldown');
+                    cardElement.appendChild(cooldownHero.cloneNode(true));
+                }
+            })
+        })
+        checkGameStatus();
     }
 }

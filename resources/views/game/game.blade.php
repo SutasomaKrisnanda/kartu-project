@@ -84,7 +84,7 @@
             <section class="timer-game"> 00 : 00</section>
             <section class="menu-section-1">Music : ON</section>
             <section class="menu-section-2">Volume : 50%</section>
-            <section class="menu-section-3">Exit</section>
+            <section class="menu-section-3"><a href="/home">Exit</a></section>
         </div>
     </div>
 

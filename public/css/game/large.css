@@ -98,10 +98,6 @@
         flex-direction: row-reverse;
     }
 
-    .dummy-card-game.hidden {
-        display: none;
-    }
-
     .dummy-played-game i {
         position: absolute;
         width: var(--icon-size);
