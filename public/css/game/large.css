@@ -1,5 +1,9 @@
 @media (min-width: 1024px) {
-
+    .tutorial-popup {
+        top: 31vh;
+        width: 7vw;
+        font-size: 1.7vw;
+    }
 
     .center-view-game {
         height: 100%;
@@ -33,7 +37,7 @@
     .dummy-card-game {
         --height: 20vh;
         width: calc(5/8 * var(--height));
-        height:var(--height);
+        height: var(--height);
     }
 
     .dummy-played-game {
@@ -71,7 +75,8 @@
         position: relative;
     }
 
-    .opponent-name-game, .player-name-game {
+    .opponent-name-game,
+    .player-name-game {
         margin: 0 20px;
         font-family: 'League Spartan', sans-serif;
         font-weight: bold;

@@ -1,5 +1,8 @@
 @media (min-width: 768px) and (max-width: 1024px) {
-
+    .tutorial-popup {
+        top: 33vh;
+        font-size: 2vw;
+    }
 
     .center-view-game {
         height: 100%;

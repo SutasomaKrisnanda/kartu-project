@@ -1,4 +1,11 @@
 @media (min-width: 0) and (max-width: 767.9px) {
+    .tutorial-popup {
+        top: 21vh;
+        left: 6vw;
+        width: 21vw;
+        font-size: 4.5vw;
+    }
+
     .cooldown-count {
         --radius: 7vh;
         font-size: 5vh;
