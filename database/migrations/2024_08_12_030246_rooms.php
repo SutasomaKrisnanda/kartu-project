@@ -48,16 +48,16 @@ return new class extends Migration
             $table->string('effect')->nullable();
             $table->json('cooldown')->nullable();
             $table->timestamps();
-
         });
 
-        Schema::create('room_moves', function (Blueprint $table){
+        Schema::create('room_moves', function (Blueprint $table) {
             $table->id();
             $table->foreignId('room_id')->constrained()->onDelete('cascade');
             $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->unsignedBigInteger('move_data')->nullable();
             $table->foreign('move_data')->references('id')->on('items')->onDelete('set null');
             $table->boolean('success')->default(false)->comment('True if the move is successful');
+            $table->boolean('win')->default(false)->comment('True if the user wins the round');
             $table->timestamps();
         });
     }

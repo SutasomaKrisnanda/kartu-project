@@ -20,7 +20,6 @@ return new class extends Migration
             $table->string('description');
             $table->string('image');
             $table->string('type');
-            $table->date('create_time');
             $table->timestamps();
         });
 
@@ -35,8 +34,8 @@ return new class extends Migration
         Schema::create('card_effects', function (Blueprint $table) {
             $table->id();
             $table->foreignId('item_id')->constrained()->onDelete('cascade');
-            $table->string('effect_type');
-            $table->integer('effect_value');
+            $table->string('type');
+            $table->integer('value');
             $table->integer('cooldown');
             $table->timestamps();
         });

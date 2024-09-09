@@ -24,8 +24,6 @@ class ItemFactory extends Factory
             'description' => fake()->text(200),
             'image' => fake()->imageUrl(640, 1024, true, 'animals'),
             'type' => fake()->randomElement(['card', 'item', 'material']),
-            'create_time' => now(),
-
         ];
     }
 }

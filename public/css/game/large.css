@@ -98,19 +98,4 @@
         flex-direction: row-reverse;
     }
 
-    .dummy-played-game i {
-        position: absolute;
-        width: var(--icon-size);
-        height: var(--icon-size);
-         border-radius: 50%;
-        background-color: rgb(255, 255, 255);
-        display: flex;
-        color: rgb(42, 46, 48, 0.7);
-        align-items: center;
-        justify-content: center;
-        font-size: calc(160%);
-        font-weight: bold;
-        display: none;
-        cursor: pointer;
-    }
 }

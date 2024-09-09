@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\CardEffect;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\User;
@@ -14,13 +15,24 @@ class InventorySeeder extends Seeder
      */
     public function run(): void
     {
-        $users = User::all();
-        $items = Item::all();
-
-        foreach ($users as $user) {
-            foreach ($items as $item) {
-                $user->items()->attach($item->id, ['quantity' => rand(1, 5)]);
-            }
+        $items = json_decode(file_get_contents(public_path('item_data.json')), true);
+        $index = 1;
+        foreach ($items as $item) {
+            Item::create([
+                'name' => $item['name'],
+                'token' => $item['token'],
+                'element' => $item['element'],
+                'description' => $item['description'],
+                'type' => $item['type'],
+                'rarity' => $item['rarity'],
+                'image' => $item['image']
+            ]);
+            CardEffect::create([
+                'item_id' => $index++,
+                'type' => $item['effect_type'],
+                'value' => $item['effect_value'],
+                'cooldown' => $item['cooldown']
+            ]);
         }
     }
 }

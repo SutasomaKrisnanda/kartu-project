@@ -1,4 +1,14 @@
 @media (min-width: 0) and (max-width: 767.9px) {
+    .cooldown-count {
+        --radius: 7vh;
+        font-size: 5vh;
+    }
+
+    .skip-button-game {
+        --radius: 8vh;
+        font-size: 2vh;
+    }
+
     .play-area-game {
         position: relative;
     }
@@ -14,6 +24,11 @@
         border-bottom-right-radius: 30px;
     }
 
+    .left-menu-game.active {
+        width: 100vw;
+        height: 100vh;
+    }
+
     .left-box {
         width: 25vw;
         max-width: 63.7917px;
@@ -22,10 +37,10 @@
 
     .right-menu-game {
         max-width: calc(154.292px - 40px);
-        width: calc(35vw - 40px);
+        width: calc(30vw - 40px);
+        height: calc(23vh - 20px);
         background-color: rgb(42, 46, 48, 0.7);
-        height: calc(35vh - 20px);
-        border-bottom-left-radius: 50px;
+        border-bottom-left-radius: 10%;
         padding: 10px 20px;
         display: flex;
         align-items: center;
@@ -34,6 +49,11 @@
 
     .history-box {
         left: 63.7917px;
+        max-height: calc(100vh - 2vw - 10px);
+    }
+
+    .history-card-container {
+        height: calc(100vh - 2vw - 10px);
     }
 
     .center-view-game {
@@ -96,13 +116,19 @@
     }
 
     .dummy-cooldown-game {
+        --width: 35vw;
+        width: calc(5/8 * var(--width));
+        height: var(--width);
+        max-width: 78.75px;
+        max-height: 126px;
         border-radius: 10px;
+
     }
 
     .dummy-card-game {
         --width: 25vw;
         width: calc(5/8 * var(--width));
-        height:var(--width);
+        height: var(--width);
         max-width: 62.25px;
         max-height: 99.5938px;
     }
@@ -114,7 +140,7 @@
         padding: 10px;
     }
 
-    .menu-history-game > i {
+    .menu-history-game>i {
         padding: 10%;
         font-size: 2.5vh;
     }
@@ -154,7 +180,8 @@
         position: relative;
     }
 
-    .opponent-name-game, .player-name-game {
+    .opponent-name-game,
+    .player-name-game {
         margin: 0 15px;
         font-family: 'League Spartan', sans-serif;
         font-weight: bold;
@@ -170,7 +197,7 @@
         display: flex;
         align-items: center;
         flex-direction: row;
-        padding: 0 0 0 15px ;
+        padding: 0 0 0 15px;
     }
 
     .opponent-effect-game {
@@ -183,34 +210,24 @@
         padding: 0 15px 0 0;
     }
 
-    .dummy-card-game.hidden, .dummy-card-game.cooldown {
+    .dummy-card-game.hidden,
+    .dummy-card-game.cooldown {
         display: flex;
         opacity: 0.3;
     }
 
-    .dummy-played-game i {
-        position: absolute;
-        width: var(--icon-size);
-        height: var(--icon-size);
-        border-radius: 50%;
-        background-color: rgb(255, 255, 255);
-        display: flex;
-        color: rgb(42, 46, 48, 0.7);
-        align-items: center;
-        justify-content: center;
-        font-size: calc(160%);
-        font-weight: bold;
-        display: none;
-        cursor: pointer;
-    }
-
-    .timer-game, .menu-section-1, .menu-section-2, .menu-section-3 {
+    .timer-game,
+    .menu-section-1,
+    .menu-section-2,
+    .menu-section-3 {
         font-size: 1.5rem;
         padding: 2% 5%;
         width: 80vw;
     }
 
-    .menu-section-1, .menu-section-2, .menu-section-3 {
+    .menu-section-1,
+    .menu-section-2,
+    .menu-section-3 {
         background-color: #2a2e30;
         color: white;
     }

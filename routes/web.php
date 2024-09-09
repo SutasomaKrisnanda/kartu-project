@@ -14,9 +14,7 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test', function () {
-    return view('test', ['cards' => Item::take(5)->get()]);
-});
+Route::get('/test', [homeController::class, 'index'])->name('home');
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [authController::class, 'login'])->name('login');

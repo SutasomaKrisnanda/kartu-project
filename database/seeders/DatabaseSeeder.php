@@ -16,6 +16,7 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         Quest::factory(10)->create();
+        $this->call([InventorySeeder::class]);
 
         User::factory()->create([
             'username' => 'username1',
@@ -27,15 +28,15 @@ class DatabaseSeeder extends Seeder
             'email' => 'test2@example.com',
         ]);
 
-        $items = Item::factory(100)->create();
-        foreach ($items as $item) {
-            if ($item->type === 'card') {
-                CardEffect::factory()->create([
-                    'item_id' => $item->id,
-                ]);
-            }
-        }
+        // $items = Item::factory(100)->create();
+        // foreach ($items as $item) {
+        //     if ($item->type === 'card') {
+        //         CardEffect::factory()->create([
+        //             'item_id' => $item->id,
+        //         ]);
+        //     }
+        // }
 
-        $this->call([InventorySeeder::class]);
+
     }
 }

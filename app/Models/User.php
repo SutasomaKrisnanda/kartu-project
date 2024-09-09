@@ -59,12 +59,13 @@ class User extends Authenticatable
                 ]);
             }
 
-            $items = Item::inRandomOrder()->take(10)->get();
-            foreach ($items as $item){
+        for ($i = 1; $i <= 20; $i++) {
                 $user->inventory()->create([
-                    'item_id' => $item->id,
+                'item_id' => $i,
+                'quantity' => 1
                 ]);
             }
+
         });
     }
 
@@ -72,6 +73,10 @@ class User extends Authenticatable
         return $this->belongsToMany(Item::class, 'inventories')
                     ->withPivot('quantity')
                     ->withTimestamps();
+    }
+
+    public function inventory(){
+        return $this->hasMany(Inventory::class);
     }
 
     public function quests(){

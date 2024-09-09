@@ -1,0 +1,173 @@
+[
+    {
+        "effect_type": "hp",
+        "effect_value": -1
+    },
+    {
+        "name": "Crush",
+        "effect_type": "hp",
+        "effect_value": -1
+    },
+    {
+        "name": "Cyclone",
+        "token": "cyclone",
+        "element": "air",
+        "rarity": 1,
+        "description": "For the next 2 turns, the opponent receives 1 damage.",
+        "image": "/images/card/cyclone.webp",
+        "type": "card"
+    },
+    {
+        "name": "Empower",
+        "token": "empower",
+        "element": "earth",
+        "rarity": 1,
+        "description": "Receives -1 damage for this round, deals +1 damage for the next round.",
+        "image": "/images/card/empower.webp",
+        "type": "card"
+    },
+    {
+        "name": "Flame On!",
+        "token": "flame-on",
+        "element": "fire",
+        "rarity": 1,
+        "description": "Heals 1 life and deals 1 damage for every time it is hurt.",
+        "image": "/images/card/flame-on.webp",
+        "type": "card"
+    },
+    {
+        "name": "Frost Breath",
+        "token": "frost-breath",
+        "element": "water",
+        "rarity": 1,
+        "description": "Freezes the opponent, preventing them from using any cards except Fire element for the next round.",
+        "image": "/images/card/frost-breath.webp",
+        "type": "card"
+    },
+    {
+        "name": "Frozen Mirror",
+        "token": "frozen-mirror",
+        "element": "water",
+        "rarity": 1,
+        "description": "Deals 1 damage and reflects the opponent's Fire element attacks.",
+        "image": "/images/card/frozen-mirror.webp",
+        "type": "card"
+    },
+    {
+        "name": "Heat Vision",
+        "token": "heat-vision",
+        "element": "fire",
+        "rarity": 1,
+        "description": "Deals 1 damage.",
+        "image": "/images/card/heat-vision.webp",
+        "type": "card"
+    },
+    {
+        "name": "Ice Shelter",
+        "token": "ice-shelter",
+        "element": "water",
+        "rarity": 1,
+        "description": "Blocks all attacks for this and the next round.",
+        "image": "/images/card/ice-shelter.webp",
+        "type": "card"
+    },
+    {
+        "name": "Iceteroid",
+        "token": "iceteroid",
+        "element": "water",
+        "rarity": 1,
+        "description": "Deals 2 damage.",
+        "image": "/images/card/iceteroid.webp",
+        "type": "card"
+    },
+    {
+        "name": "Impact",
+        "token": "impact",
+        "element": "air",
+        "rarity": 1,
+        "description": "Deals 2 damage.",
+        "image": "/images/card/impact.webp",
+        "type": "card"
+    },
+    {
+        "name": "Incinerate",
+        "token": "incinerate",
+        "element": "fire",
+        "rarity": 1,
+        "description": "Deals 1 damage. If the opponent uses an Earth element card, deals another 1 damage.",
+        "image": "/images/card/incinerate.webp",
+        "type": "card"
+    },
+    {
+        "name": "Maelstorm's Gift",
+        "token": "maelstorms-gift",
+        "element": "air",
+        "rarity": 1,
+        "description": "Permanently buffs all your Air element cards to deal +1 damage.",
+        "image": "/images/card/maelstorms-gift.webp",
+        "type": "card"
+    },
+    {
+        "name": "Overheat",
+        "token": "overheat",
+        "element": "fire",
+        "rarity": 1,
+        "description": "Buffs your Fire element cards to deal +1 damage and cannot be countered for the next round.",
+        "image": "/images/card/overheat.webp",
+        "type": "card"
+    },
+    {
+        "name": "Puddle",
+        "token": "puddle",
+        "element": "water",
+        "rarity": 1,
+        "description": "Applies the Wet effect to the opponent for the next 3 rounds, dealing 1 damage each time they use an Air element card.",
+        "image": "/images/card/puddle.webp",
+        "type": "card"
+    },
+    {
+        "name": "Rebirth Breeze",
+        "token": "rebirth-breeze",
+        "element": "air",
+        "rarity": 1,
+        "description": "Grants the player the Undying effect for the next 3 rounds. If the player dies during this time, they are revived with 1 HP. The Undying effect is then removed.",
+        "image": "/images/card/rebirth-breeze.webp",
+        "type": "card"
+    },
+    {
+        "name": "Regeneration",
+        "token": "regeneration",
+        "element": "earth",
+        "rarity": 1,
+        "description": "Heals 1 life for this round and again in the next round.",
+        "image": "/images/card/regeneration.webp",
+        "type": "card"
+    },
+    {
+        "name": "Scorch",
+        "token": "scorch",
+        "element": "fire",
+        "rarity": 1,
+        "description": "Burns the opponent's played card, preventing it from being used again during the game. Only one card can be burned at a time.",
+        "image": "/images/card/scorch.webp",
+        "type": "card"
+    },
+    {
+        "name": "Smash!",
+        "token": "smash",
+        "element": "earth",
+        "rarity": 1,
+        "description": "Deals 1 damage.",
+        "image": "/images/card/smash.webp",
+        "type": "card"
+    },
+    {
+        "name": "Super Speed",
+        "token": "super-speed",
+        "element": "earth",
+        "rarity": 1,
+        "description": "Deals 1 damage. In the next round, you can see the opponent's move.",
+        "image": "/images/card/super-speed.webp",
+        "type": "card"
+    }
+]

@@ -41,8 +41,8 @@
                         '{{ $item->name }}',
                         '{{ $item->description }}',
                         '{{ $item->pivot->quantity }}',
-                        '{{ $item->type === 'card' ? $item->effect->effect_type : '' }}',
-                        '{{ $item->type === 'card' ? $item->effect->effect_value : '' }}'
+                        '{{ $item->type === 'card' ? $item->effect->type : '' }}',
+                        '{{ $item->type === 'card' ? $item->effect->value : '' }}'
                     )">
                     <div class="card-body">
                         <span class="rounded-circle bg-warning text-white text-center"
@@ -55,8 +55,8 @@
                             '{{ $item->name }}',
                             '{{ $item->description }}',
                             '{{ $item->pivot->quantity }}',
-                            '{{ $item->type === 'card' ? $item->effect->effect_type : '' }}',
-                            '{{ $item->type === 'card' ? $item->effect->effect_value : '' }}'
+                            '{{ $item->type === 'card' ? $item->effect->type : '' }}',
+                            '{{ $item->type === 'card' ? $item->effect->value : '' }}'
                         )">
                             {{ $item->name }}
                         </b>

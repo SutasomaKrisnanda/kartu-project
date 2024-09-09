@@ -35,7 +35,7 @@ class gameController extends Controller
     {
         $user = User::find(Auth::user()->id); // Fetch user using User model
         if ($user) {
-            $room = $user->rooms()->first(); // Get the user's room
+            $room = $user->rooms->last(); // Get the user's room
             if ($room) {
                 $playerCount = $room->users()->count();
                 $inProgress = RoomUserItem::where('room_id', $room->id)->where('user_id', $user->id)->exists();
@@ -60,7 +60,7 @@ class gameController extends Controller
 
         // Save user selected Cards
         $user = User::find(Auth::user()->id);
-        $room = $user->rooms()->first();
+        $room = $user->rooms->last();
 
         // Find the selected cards
         $cards = Item::whereIn('token', $selectedCards)->get();
@@ -94,6 +94,9 @@ class gameController extends Controller
             : null;
 
         // Get the player's selected cards (now saved in RoomUserItem)
+        $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->get();
+        $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->get();
+
         $roomUserItems = $room->items()->where('room_user_items.user_id', $user->id)->get();
         $cards = $roomUserItems->map(fn($roomUserItem) => $roomUserItem->item);
 
@@ -104,6 +107,9 @@ class gameController extends Controller
             'opponent' => $opponent,
             'playerStatus' => $playerStatus,
             'opponentStatus' => $opponentStatus,
+            'history' => $room->moves,
+            'historya' => $playerMove,
+            'historyb' => $opponentMove
         ];
 
         // Render game.blade.php into HTML
@@ -116,26 +122,19 @@ class gameController extends Controller
         ]);
     }
 
-
     public function getGame(Request $request)
     {
         $user = User::find(Auth::user()->id);
-        $room = $user->rooms()->first();
-
-        // Mengambil lawan secara langsung dari relasi users di Room
+        $room = $user->rooms->last();
         $opponent = $room->users()
             ->where('users.id', '!=', $user->id)
             ->first();
-
-        // Mengambil items dari user yang sedang login di room saat ini
         $roomUserItems = $room->items()->where('user_id', $user->id)->get();
         $cards = $roomUserItems->map(fn($roomUserItem) => $roomUserItem->item);
-
-        // Mengambil status dari player
         $playerStatus = $room->status()->where('user_id', $user->id)->latest()->first();
-
-        // Mengambil status dari opponent jika ada
         $opponentStatus = $opponent ? $room->status()->where('user_id', $opponent->id)->latest()->first() : null;
+        $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->orderByDesc('id')->get();
+        $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->orderByDesc('id')->get();
 
         $data = [
             'cards' => $cards,
@@ -143,54 +142,84 @@ class gameController extends Controller
             'opponent' => $opponent,
             'playerStatus' => $playerStatus,
             'opponentStatus' => $opponentStatus,
+            'history' => $room->moves,
+            'historya' => $playerMove,
+            'historyb' => $opponentMove
         ];
-
-        return view('game/game', $data);
+        return response()->json([
+            'html' => view('game/game', $data)->render(),
+            'time' => $room->updated_at,
+            'start' => $room->created_at
+        ]);
     }
-
-
 
     public function getGameStatus(Request $request)
     {
         $user = User::find(Auth::user()->id);
-        $room = $user->rooms()->first();
-        if (!$room) {
-            return response()->json(['error' => 'User is not in any room'], 404);
-        }
-        $playerStatus = RoomUserStatus::where('user_id', $user->id)->latest()->first();
-        $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->latest()->first();
-        $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->latest()->first();
-        $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->latest()->first();
-        if ($playerMove && $opponentMove)
-            if (!$playerMove->success && !$opponentMove->success) {
-                $this->runCardEffect($this->checkElement($playerMove, $opponentMove));
-                $playerMove->success = true;
-                $opponentMove->success = true;
-                $playerMove->save();
-                $opponentMove->save();
-                $this->updateCooldown($playerMove, $opponentMove, $playerStatus, $opponentStatus);
+        $room = $user->rooms->last();
+        if (!$room) return response()->json(['error' => 'User is not in any room'], 404);
+        $playerStatus = RoomUserStatus::where('user_id', $user->id)->where('room_id', $room->id)->latest()->first();
+        $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->where('room_id', $room->id)->latest()->first();
+        $playerMove = RoomMove::where('room_id', $room->id)->where('user_id', $user->id)->with('move')->get();
+        $opponentMove = RoomMove::where('room_id', $room->id)->where('user_id', '!=', $user->id)->with('move')->get();
+        // THis is for debug
+        // return response()->json([
+        //     'success' => false,
+        //     'message' => $opponentMove
+        // ]);
+        if (!$playerMove->isEmpty() && !$opponentMove->isEmpty())
+            if (!$playerMove->last()->success && !$opponentMove->last()->success) {
+                $this->runCardEffect($this->checkElement($playerMove->last(), $opponentMove->last()));
+                $playerMove->last()->success = true;
+                $opponentMove->last()->success = true;
+                $playerMove->last()->save();
+                $opponentMove->last()->save();
+                $this->updateCooldown($playerMove->last(), $opponentMove->last(), $playerStatus, $opponentStatus);
+                $room->save();
+                $room->touch();
             }
+        if ($playerStatus->hp == 0 && $opponentStatus->hp == 0) $room->winner_id = 'draw';
+        elseif ($playerStatus->hp == 0) $room->winner_id = $opponentStatus->user_id;
+        elseif ($opponentStatus->hp == 0) $room->winner_id = $playerStatus->user_id;
+        $room->save();
+
+        $historya = $playerMove->sortByDesc('id')->map(function ($move) {
+            return [
+                'move' => $move->move ? $move->move->only(['name', 'image', 'token']) : false,
+                'win' => $move->win
+            ];
+        });
+
+        $historyb = $opponentMove->sortByDesc('id')->map(function ($move) {
+            return [
+                'move' => $move->move ? $move->move->only(['name', 'image', 'token']) : false,
+                'win' => $move->win
+            ];
+        });
 
         return response()->json([
             'player' => $playerStatus ? $playerStatus->only(['hp', 'effect']) : ['hp' => 8, 'effect' => 'Not Found'],
             'opponent' => $opponentStatus ? $opponentStatus->only(['hp', 'effect']) : ['hp' => 8, 'effect' => 'Not Found'],
-            'success' => ($playerMove && $opponentMove) ? ($playerMove->success && $opponentMove->success) : false,
+            'success' => ($playerMove && $opponentMove) ? ($playerMove->last()->success && $opponentMove->last()->success) : false,
             'playerCooldown' => json_decode($playerStatus->cooldown),
             'opponentCooldown' => json_decode($opponentStatus->cooldown),
-            'message' => 'Hello from gameController'
+            'historya' => $historya,
+            'historyb' => $historyb,
+            'message' => [$opponentMove->isEmpty() ? 'Null' : $opponentMove->last()->move, $playerMove->isEmpty() ? 'Null' : $playerMove->last()->move]
         ]);
     }
 
-    private function updateCooldown($playerMove, $opponentMove, $playerStatus, $opponentStatus) {
-        $updateCooldownList = function(&$cooldowns) {
+    private function updateCooldown($playerMove, $opponentMove, $playerStatus, $opponentStatus)
+    {
+        $updateCooldownList = function (&$cooldowns) {
             if ($cooldowns) {
-            foreach ($cooldowns as $index => &$cd) {
-                $cd['duration']--;
-                if ($cd['duration'] <= 0) {
-                    unset($cooldowns[$index]);
+                foreach ($cooldowns as $index => &$cd) {
+                    $cd['duration']--;
+                    if ($cd['duration'] <= 0) {
+                        unset($cooldowns[$index]);
+                    }
                 }
-            }
-            $cooldowns = array_values($cooldowns);
+                $cooldowns = array_values($cooldowns);
             }
         };
         $playerCd = $playerStatus->cooldown ? json_decode($playerStatus->cooldown, true) : [];
@@ -216,12 +245,10 @@ class gameController extends Controller
         $opponentStatus->save();
     }
 
-
-
     public function updateGameStatus(Request $request, $type)
     {
         $user = User::find(Auth::user()->id);
-        $room = $user->rooms()->first();
+        $room = $user->rooms->last();
 
         switch ($type) {
             case 'card':
@@ -233,44 +260,117 @@ class gameController extends Controller
                     'move_data' => $card->id
                 ]);
                 $data->save();
-                break;
+                return response()->json(['message' => $card->element]);
+            case 'skip':
+                $data = new RoomMove([
+                    'room_id' => $room->id,
+                    'user_id' => $user->id,
+                ]);
+                $data->save();
+                return response()->json(['message' => 'Done Skipped']);
             default:
                 return response()->json(['message' => 'Invalid type']);
         }
-
-        return response()->json(['message' => $card->element]);
     }
 
     private function checkElement($move1, $move2)
     {
-        $element1 = $move1->move->element;
-        $element2 = $move2->move->element;
+        $card1 = $move1->move;
+        $card2 = $move2->move;
+        if (!$card1 && $card2) return [$move2];
+        if (!$card2 && $card1) return [$move1];
+        if (!$card1 && !$card2) return [];
+        $element1 = $card1->element;
+        $element2 = $card2->element;
+        if ($element1 == $element2) return [$move1, $move2];
         switch ($element1) {
-            case 'Fire':
-                if ($element2 == 'Air') return [$move1];
-                else if ($element2 == 'Water') return [$move2];
-            case 'Water':
-                if ($element2 == 'Fire') return [$move1];
-                else if ($element2 == 'Earth') return [$move2];
-            case 'Earth':
-                if ($element2 == 'Water') return [$move1];
-                else if ($element2 == 'Air') return [$move2];
-            case 'Air':
-                if ($element2 == 'Earth') return [$move1];
-                else if ($element2 == 'Fire') return [$move2];
+            case 'fire':
+                if ($element2 == 'air') return [$move1];
+                else if ($element2 == 'water') return [$move2];
+                else return [$move1, $move2];
+            case 'water':
+                if ($element2 == 'fire') return [$move1];
+                else if ($element2 == 'earth') return [$move2];
+                else return [$move1, $move2];
+            case 'earth':
+                if ($element2 == 'water') return [$move1];
+                else if ($element2 == 'air') return [$move2];
+                else return [$move1, $move2];
+            case 'air':
+                if ($element2 == 'earth') return [$move1];
+                else if ($element2 == 'fire') return [$move2];
+                else return [$move1, $move2];
             default:
-                return [$move1, $move2];
+                return [];
         }
     }
 
     private function runCardEffect(array $moves)
     {
         foreach ($moves as $move) {
+            $card = $move->move;
+            $effect = $card->effect;
+            switch($effect->type) {
+                case 'damage':
+                    $move->win = $this->damage($move, $effect);
+                    break;
+                case 'heal':
+                    $move->win = $this->heal($move, $effect);
+                    break;
+                // case 'block':
+                //     $move->win = $this->block($move, $effect);
+                //     break;
+                // case 'counter':
+                //     $move->win = $this->counter($move, $effect);
+                //     break;
+                // case 'poison':
+                //     $move->win = $this->poison($move, $effect);
+                //     break;
+                default:
+                    $move->win = false;
+                    break;
+            }
+        }
+    }
+
+    private function damage($move, $effect)
+    {
+        if ($effect->value) {
             $user = $move->user;
             $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->latest()->first();
-            $opponentStatus->hp = $opponentStatus->hp - 1;
+            $opponentStatus->hp -= $effect->value;
+            if ($opponentStatus->hp < 0) $opponentStatus->hp = 0 ;
             $opponentStatus->save();
+            $move->win = true;
+            $move->save();
         }
         return 0;
     }
+
+    private function heal($move, $effect)
+    {
+        if ($effect->value) {
+            $user = $move->user;
+            $opponentStatus = RoomUserStatus::where('user_id', $user->id)->latest()->first();
+            $opponentStatus->hp += $effect->value;
+            if ($opponentStatus->hp > 10) $opponentStatus->hp = 10;
+            $opponentStatus->save();
+            $move->win = true;
+            $move->save();
+        }
+        return 0;
+    }
+
+    // private function block($move, $effect)
+    // {
+    //     if ($effect->value) {
+    //         $user = $move->user;
+    //         $opponentStatus = RoomUserStatus::where('user_id', '!=', $user->id)->latest()->first();
+    //         $opponentStatus->block += $effect->value;
+    //         $opponentStatus->save();
+    //         $move->win = true;
+    //         $move->save();
+    //     }
+    //     return 0;
+    // }
 }

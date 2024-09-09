@@ -11,7 +11,7 @@ class battleController extends Controller
 {
     public function index(){
         $user = Auth::user();
-        $rooms = Room::where('visibility', 'public')->get();
+        $rooms = Room::where('visibility', 'public')->where('status', 'waiting')->get();
         $data = [
             'user' => $user,
             'rooms' => $rooms
@@ -20,7 +20,7 @@ class battleController extends Controller
     }
 
     public function getRoomList(){
-        $rooms = Room::where('visibility', 'public')->get();
+        $rooms = Room::where('visibility', 'public')->where('status', 'waiting')->get();
         return response()->json($rooms);
     }
 
@@ -90,7 +90,7 @@ class battleController extends Controller
             $room->save();
 
             $room->users()->attach(Auth::user()->id, ['role' => 'player']);
-            
+
             $roomUserStatus = new RoomUserStatus([
                 'room_id' => $room->id,
                 'user_id' => Auth::user()->id,

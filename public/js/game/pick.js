@@ -80,9 +80,7 @@ function autoCompleteSelection() {
     }
     acceptBtn.disabled = false;
 }
-
 acceptBtn.addEventListener('click', async () => {
-    acceptBtn.removeEventListener('click', arguments.callee);
     selectedCards = Array.from(document.querySelectorAll('.card.selected'));
 
     if (selectedCards.length !== 5) {
@@ -112,6 +110,7 @@ acceptBtn.addEventListener('click', async () => {
         alert('An error occurred while starting the game: ' + error.message);
     }
 });
+
 
 
 
