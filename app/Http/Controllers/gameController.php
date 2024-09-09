@@ -313,10 +313,8 @@ class gameController extends Controller
             switch($effect->type) {
                 case 'damage':
                     $move->win = $this->damage($move, $effect);
-                    break;
                 case 'heal':
                     $move->win = $this->heal($move, $effect);
-                    break;
                 // case 'block':
                 //     $move->win = $this->block($move, $effect);
                 //     break;
@@ -328,7 +326,6 @@ class gameController extends Controller
                 //     break;
                 default:
                     $move->win = false;
-                    break;
             }
         }
     }

@@ -70,6 +70,7 @@ function pageLoaded(time, startTime) {
     const addHistoryCard = (history, selector) => {
         const card = document.createElement('div');
         card.classList.add('history-card-game', history.win ? 'active' : 'nonactive');
+        card.classList.add('history-card-game', history.move ? 'true' : 'skip');
         const img = document.createElement('img');
         img.src = history.move ? history.move.image : '/images/card/slot-skipped.webp';
         img.alt = history.move ? history.move.name : 'Skipped';
