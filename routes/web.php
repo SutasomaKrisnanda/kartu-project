@@ -2,6 +2,7 @@
 
 use App\Models\Item;
 use Illuminate\Routing\Controller;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\authController;
 use App\Http\Controllers\gameController;
@@ -14,7 +15,12 @@ Route::get('/', function () {
     return view('welcome');
 });
 
-Route::get('/test', [homeController::class, 'index'])->name('home');
+// Route::get('/test', [homeController::class, 'index'])->name('home');
+Route::get('/test', function () {
+    return view('profile', [
+        'user' => Auth::user()
+    ]);
+});
 
 Route::middleware(['guest'])->group(function () {
     Route::get('/login', [authController::class, 'login'])->name('login');

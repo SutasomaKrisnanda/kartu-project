@@ -1,0 +1,38 @@
+[debug] [2024-09-09T06:42:49.654Z] ----------------------------------------------------------------------
+[debug] [2024-09-09T06:42:49.670Z] Command:       /nix/store/aspnwxp3q1wvg8jd1zg0295zmhr3lkb3-nodejs-18.19.1/bin/node /nix/store/pf4ama10fsjb161xrxgsyqi21qm10wc6-firebase-tools-13.13.1/lib/node_modules/firebase-tools/lib/bin/firebase.js init hosting
+[debug] [2024-09-09T06:42:49.671Z] CLI Version:   13.13.1
+[debug] [2024-09-09T06:42:49.683Z] Platform:      linux
+[debug] [2024-09-09T06:42:49.683Z] Node Version:  v18.19.1
+[debug] [2024-09-09T06:42:49.684Z] Time:          Mon Sep 09 2024 06:42:49 GMT+0000 (Coordinated Universal Time)
+[debug] [2024-09-09T06:42:49.685Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2024-09-09T06:42:49.704Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2024-09-09T06:42:49.705Z] > authorizing via signed-in user (sutasomakrisnanda@gmail.com)
+[info] 
+     ######## #### ########  ######## ########     ###     ######  ########
+     ##        ##  ##     ## ##       ##     ##  ##   ##  ##       ##
+     ######    ##  ########  ######   ########  #########  ######  ######
+     ##        ##  ##    ##  ##       ##     ## ##     ##       ## ##
+     ##       #### ##     ## ######## ########  ##     ##  ######  ########
+
+You're about to initialize a Firebase project in this directory:
+
+  /home/user/laravel-learn
+
+[info] 
+=== Project Setup
+[info] 
+[info] First, let's associate this project directory with a Firebase project.
+[info] You can create multiple project aliases by running firebase use --add, 
+[info] but for now we'll just set up a default project.
+[info] 
+[debug] [2024-09-09T06:42:58.200Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/availableProjects pageSize=100
+[debug] [2024-09-09T06:42:58.474Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/availableProjects 401
+[debug] [2024-09-09T06:42:58.483Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/availableProjects [omitted]
+[debug] [2024-09-09T06:42:58.491Z] HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+[debug] [2024-09-09T06:42:58.535Z] FirebaseError: HTTP Error: 401, Request had invalid authentication credentials. Expected OAuth 2 access token, login cookie or other valid authentication credential. See https://developers.google.com/identity/sign-in/web/devconsole-project.
+    at responseToError (/nix/store/pf4ama10fsjb161xrxgsyqi21qm10wc6-firebase-tools-13.13.1/lib/node_modules/firebase-tools/lib/responseToError.js:49:12)
+    at RetryOperation._fn (/nix/store/pf4ama10fsjb161xrxgsyqi21qm10wc6-firebase-tools-13.13.1/lib/node_modules/firebase-tools/lib/apiv2.js:305:77)
+    at process.processTicksAndRejections (node:internal/process/task_queues:95:5)
+[error] 
+[error] Error: Failed to list available Google Cloud Platform projects. See firebase-debug.log for more info.
