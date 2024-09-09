@@ -5,6 +5,23 @@
     margin: 0;
 }
 
+.accept-container {
+    position: fixed;
+    bottom: 0;
+    padding: 5vh 0;
+    width: 100vw;
+    background-color: white;
+    left: 0;
+}
+
+.pick-description {
+    display: flex;
+    justify-content: center;
+    padding: 3vh;
+    font-size: 5vh;
+    font-family: math;
+}
+
 .pick-container {
     text-align: center;
     background-color: #fff;
@@ -24,6 +41,7 @@
     justify-content: center;
     gap: 10px;
     margin-bottom: 20px;
+    padding: 0 0 10vh 0;
 }
 
 .card {

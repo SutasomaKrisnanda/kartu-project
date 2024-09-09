@@ -1,20 +1,25 @@
-
+const gameDesc = document.createElement('div');
 const gameContainer = document.createElement('div');
 const pickContainer = document.createElement('div');
 const timerElement = document.createElement('div');
 const cardContainer = document.createElement('div');
 const acceptBtn = document.createElement('button');
+const acceptContainer = document.createElement('div');
+gameDesc.classList.add('pick-description');
 gameContainer.classList.add('body-game');
 pickContainer.classList.add('pick-container');
 timerElement.classList.add('timer');
 cardContainer.classList.add('card-container');
+acceptContainer.classList.add('accept-container');
+gameDesc.textContent = 'Pick 5 Card to play the game';
 timerElement.id = 'timer';
 timerElement.textContent = '02:00';
 cardContainer.id = 'card-container';
 acceptBtn.id = 'accept-btn';
 acceptBtn.textContent = 'Accept';
 acceptBtn.disabled = true;
-pickContainer.append(timerElement, cardContainer, acceptBtn);
+acceptContainer.appendChild(acceptBtn);
+pickContainer.append(timerElement, gameDesc, cardContainer, acceptContainer);
 gameContainer.appendChild(pickContainer);
 document.body.appendChild(gameContainer);
 
@@ -76,11 +81,13 @@ function autoCompleteSelection() {
         const randomCard = remainingCards[Math.floor(Math.random() * remainingCards.length)];
         randomCard.classList.add('selected');
         selectedCards.push(randomCard);
-        acceptBtn.click();
+        buttonClicked();
     }
     acceptBtn.disabled = false;
 }
-acceptBtn.addEventListener('click', async () => {
+acceptBtn.addEventListener('click', buttonClicked);
+
+async function buttonClicked(){
     selectedCards = Array.from(document.querySelectorAll('.card.selected'));
 
     if (selectedCards.length !== 5) {
@@ -109,7 +116,7 @@ acceptBtn.addEventListener('click', async () => {
         console.error('Error starting game:', error);
         alert('An error occurred while starting the game: ' + error.message);
     }
-});
+}
 
 
 
